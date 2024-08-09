@@ -14,10 +14,17 @@ builder.Services.AddDefaultIdentity<RazorPagesPizzaUser>(options => options.Sign
     .AddEntityFrameworkStores<RazorPagesPizzaAuth>();
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+//Alternatively, you could have instead modified AdminsOnly.cshtml.cs.
+//In that case, you would add [Authorize(Policy = "Admin")] as an attribute on the AdminsOnlyModel class.
+//An advantage to the AuthorizePage approach shown above is that the Razor Page being secured requires no modifications.
+//The authorization aspect is instead managed in Program.cs.
+builder.Services.AddRazorPages(options =>
+    options.Conventions.AuthorizePage("/AdminsOnly", "Admin"));
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton(new QRCodeService(new QRCodeGenerator()));
+builder.Services.AddAuthorization( options => options.AddPolicy("Admin", policy => policy.RequireAuthenticatedUser()
+            .RequireClaim("IsAdmin", bool.TrueString)));
 
 
 var app = builder.Build();
